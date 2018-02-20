@@ -9,9 +9,9 @@ namespace Sssnake
     class Food
     {
         public Coordinate foodCoordinate;
-        public void Draw(System.Drawing.Graphics graphics, int W, int H)
+        public void Draw(System.Drawing.Graphics graphics, int S)
         {
-            graphics.FillRectangle(System.Drawing.Brushes.Green, this.foodCoordinate.X, this.foodCoordinate.Y, W, H);
+            graphics.FillRectangle(System.Drawing.Brushes.Green, this.foodCoordinate.X*S, this.foodCoordinate.Y*S, S, S);
         }
     }
     
