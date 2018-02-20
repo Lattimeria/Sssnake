@@ -8,14 +8,19 @@ namespace Sssnake
 {
     class Snake
     {
+        public int Length;
         public List<Coordinate> segments;
         public int way = 0;
+
+        public Heading CurrentHeading { get; private set; }
+
         public Snake(int headX,int headY) //задание начальных ячеек змеи
         {
             segments = new List<Coordinate>();
             segments.Add(new Coordinate(headX, headY-3));
             segments.Add(new Coordinate(headX, headY-2));
             segments.Add(new Coordinate(headX, headY-1));
+            Length = segments.Count;
         }
         public void Update(int W,int H) //двигаем змею
         {
@@ -45,7 +50,18 @@ namespace Sssnake
                     break;
             }
             Coordinate newHead = new Coordinate(headX, headY);
-            segments.Insert(0, newHead);
+            
+            for(int i=segments.Count-1;i>0;i--)
+            {
+                segments[i] = segments[i -1];
+            }
+                        
+            while (Length > segments.Count)
+            {
+                segments.Add(segments[segments.Count - 1]);
+            }            
+
+            segments[0] = newHead;
         }
 
         public void Draw(System.Drawing.Graphics graphics, int S) //отрисовка змеи

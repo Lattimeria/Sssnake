@@ -76,7 +76,7 @@ namespace Sssnake
         private void timer1_Tick(object sender, EventArgs e)
         {
             game.Update(W, H);
-            
+            Refresh();
             
         }
     }
