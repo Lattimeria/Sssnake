@@ -42,6 +42,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 261);
             this.Name = "Form1";
+            this.Padding = new System.Windows.Forms.Padding(2);
             this.Text = "Snake";
             this.ResumeLayout(false);
 

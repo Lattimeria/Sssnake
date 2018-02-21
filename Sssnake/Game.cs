@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace Sssnake
 {
-    enum Heading
+    enum Heading //движение змеи, 0 - вверх, 1 - вправо, 2 - вниз, 3 - влево
     {
         Top,
         Right,
@@ -18,70 +18,88 @@ namespace Sssnake
     {
         Snake snake;
         Food food;
-        int foods=0; //кол-во съеденной еды
+        int foods = 0; //кол-во съеденной еды
         Random rand = new Random();
-        
+        int score = 0; //рекорд
         public void Start(int W, int H, int S)
         {
-            int headX = W/2, headY = H/2;
-            snake = new Snake(headX,headY);
-            int way = snake.way;
+            int headX = W / 2, headY = H / 2; //начальные координаты змеи
+            snake = new Snake(headX, headY);
 
             food = new Food();
-            food.foodCoordinate.X = rand.Next(W);
-            food.foodCoordinate.Y = rand.Next(H);
-            
-        } 
-        public void Update(int W, int H) //проверка столкновений
-        {
-            snake.Update(W,H);
+            AddFood(W, H);
 
-            if (snake.segments[0].X == food.foodCoordinate.X && snake.segments[0].Y == food.foodCoordinate.Y)
+        }
+        void AddFood(int W, int H) // добавление еды на поле
+        {
+            do
             {
                 food.foodCoordinate.X = rand.Next(W);
                 food.foodCoordinate.Y = rand.Next(H);
-                foods++;
+            }
+            while (snake.CheckCollision(food.foodCoordinate.X, food.foodCoordinate.Y) == true);
 
-                // положить в метод в змейке (Grow)
-                snake.Length++;
+        }
+        
+        public void Update(int W, int H, out bool SnakeEatHimself) //проверка столкновений
+        {
+            SnakeEatHimself = false;
+            snake.Update(W, H);
+            if (snake.EatHimself() == true)
+                SnakeEatHimself = true;
+            if (snake.segments[0].X == food.foodCoordinate.X && snake.segments[0].Y == food.foodCoordinate.Y)
+            {
+                AddFood(W, H);
+                foods++;
+                score++;
+                snake.Grow();
             }
         }
-        public void KeyDown(int pressKey,int W,int H)
+        public void KeyDown(int pressKey, int W, int H)
         {
             switch (pressKey)
             {
                 case 0:
-                    if (snake.way != 2)
-                        snake.way = 0;
+                    if (snake.CurrentHeading != Heading.Bottom)
+                        snake.FutureHeading = Heading.Top;
                     break;
                 case 2:
-                    if (snake.way != 0)
-                        snake.way = 2;
+                    if (snake.CurrentHeading != Heading.Top)
+                        snake.FutureHeading = Heading.Bottom;
                     break;
                 case 1:
-                    if (snake.way != 3)
-                        snake.way = 1;
+                    if (snake.CurrentHeading != Heading.Left)
+                        snake.FutureHeading = Heading.Right;
                     break;
                 case 3:
-                    if (snake.way != 1)
-                        snake.way = 3;
+                    if (snake.CurrentHeading != Heading.Right)
+                        snake.FutureHeading = Heading.Left;
                     break;
             }
 
-           
+
         }
-        public void Draw(System.Drawing.Graphics graphics, int S)
+        public void Draw(System.Drawing.Graphics graphics, int S) //отрисовка
         {
-            food.Draw(graphics,S);
-            snake.Draw(graphics,S);
+            food.Draw(graphics, S);
+            snake.Draw(graphics, S);
+
+            string state = "Score:" + score.ToString();
+            graphics.DrawString(state, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 5));
         }
-        
+        public void DrawGameOver(System.Drawing.Graphics graphics, int S) //отрисовка
+        {
+            string state = "Name: Latimeria" + "\n" +
+                "Food:" + food.ToString() + "\n" + "Score:" + score.ToString();
+
+            graphics.DrawString(state, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 5));
+        }
     }
-    public struct  Coordinate
+    public struct Coordinate
     {
         public int X;
         public int Y;
-        public Coordinate(int x,int y)
+        public Coordinate(int x, int y)
         {
             X = x;
             Y = y;
