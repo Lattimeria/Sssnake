@@ -14,6 +14,8 @@ namespace Sssnake
         Bottom,
         Left
     }
+
+    
     class Game
     {
         Snake snake;
@@ -21,6 +23,7 @@ namespace Sssnake
         int foods = 0; //кол-во съеденной еды
         Random rand = new Random();
         int score = 0; //рекорд
+        bool gameFinished = false;
         public void Start(int W, int H, int S)
         {
             int headX = W / 2, headY = H / 2; //начальные координаты змеи
@@ -41,12 +44,15 @@ namespace Sssnake
 
         }
         
-        public void Update(int W, int H, out bool SnakeEatHimself) //проверка столкновений
+        public void Update(int W, int H, out bool SnakeEatHimself /*Не нужно*/) //проверка столкновений
         {
             SnakeEatHimself = false;
             snake.Update(W, H);
             if (snake.EatHimself() == true)
-                SnakeEatHimself = true;
+            {
+                gameFinished = true;
+                SnakeEatHimself = true; 
+            }
             if (snake.segments[0].X == food.foodCoordinate.X && snake.segments[0].Y == food.foodCoordinate.Y)
             {
                 AddFood(W, H);
@@ -81,11 +87,18 @@ namespace Sssnake
         }
         public void Draw(System.Drawing.Graphics graphics, int S) //отрисовка
         {
-            food.Draw(graphics, S);
-            snake.Draw(graphics, S);
+            if (!gameFinished)
+            {
+                food.Draw(graphics, S);
+                snake.Draw(graphics, S);
 
-            string state = "Score:" + score.ToString();
-            graphics.DrawString(state, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 5));
+                string state = "Score:" + score.ToString();
+                graphics.DrawString(state, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 5));
+            }
+            else
+            {
+                DrawGameOver(graphics, S);
+            }
         }
         public void DrawGameOver(System.Drawing.Graphics graphics, int S) //отрисовка
         {
@@ -103,6 +116,16 @@ namespace Sssnake
         {
             X = x;
             Y = y;
+        }
+
+        public static bool operator == (Coordinate left, Coordinate right)
+        {
+            return left.X == right.X && left.Y == right.Y;
+        }
+
+        public static bool operator !=(Coordinate left, Coordinate right)
+        {
+            return left.X != right.X || left.Y != right.Y;
         }
     }
 }

@@ -55,6 +55,7 @@ namespace Sssnake
                     break;
             }
             game.KeyDown(pressKey, W, H);
+            UpdateAndDraw();
 
         }
 
@@ -78,7 +79,12 @@ namespace Sssnake
         bool snakeeathimself;
         private void timer1_Tick(object sender, EventArgs e)
         {
-            game.Update(W, H,out snakeeathimself);
+            UpdateAndDraw();
+        }
+
+        void UpdateAndDraw()
+        {
+            game.Update(W, H, out snakeeathimself);
             Refresh();
         }
     }
