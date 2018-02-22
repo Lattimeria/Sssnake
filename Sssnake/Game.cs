@@ -15,15 +15,19 @@ namespace Sssnake
         Left
     }
 
-    
+
     class Game
     {
         Snake snake;
         Food food;
         int foods = 0; //кол-во съеденной еды
         Random rand = new Random();
-        int score = 0; //рекорд
-        bool gameFinished = false;
+        public int score = 0; //рекорд
+        int stage = 1; //уровень (за каждые 10 еды +1 уровень)
+        public bool gameFinished = false;
+
+        public bool StageUp = false;
+
         public void Start(int W, int H, int S)
         {
             int headX = W / 2, headY = H / 2; //начальные координаты змеи
@@ -43,26 +47,31 @@ namespace Sssnake
             while (snake.CheckCollision(food.foodCoordinate.X, food.foodCoordinate.Y) == true);
 
         }
-        
-        public void Update(int W, int H, out bool SnakeEatHimself /*Не нужно*/) //проверка столкновений
+
+        public void Update(int W, int H) //проверка столкновений
         {
-            SnakeEatHimself = false;
+
             snake.Update(W, H);
             if (snake.EatHimself() == true)
             {
                 gameFinished = true;
-                SnakeEatHimself = true; 
             }
             if (snake.segments[0].X == food.foodCoordinate.X && snake.segments[0].Y == food.foodCoordinate.Y)
             {
                 AddFood(W, H);
                 foods++;
-                score++;
+                score += stage;
+                if (foods % 10 == 0)
+                {
+                    stage++;
+                    StageUp = true;
+                }
                 snake.Grow();
             }
         }
         public void KeyDown(int pressKey, int W, int H)
         {
+
             switch (pressKey)
             {
                 case 0:
@@ -82,10 +91,8 @@ namespace Sssnake
                         snake.FutureHeading = Heading.Left;
                     break;
             }
-
-
         }
-        public void Draw(System.Drawing.Graphics graphics, int S) //отрисовка
+        public void Draw(System.Drawing.Graphics graphics, int S, List<int> ListScores) //отрисовка
         {
             if (!gameFinished)
             {
@@ -97,15 +104,36 @@ namespace Sssnake
             }
             else
             {
-                DrawGameOver(graphics, S);
+                ListScores.Add(score);
+                int count = ListScores.Count - 1;
+                for (int i = count-1; i > 0; i--)
+                {
+                    if (ListScores[count] > ListScores[i])
+                    {
+                        int temp = ListScores[i];
+                        ListScores[i] = ListScores[count];
+                        ListScores[count] = temp;
+                    }
+                        
+                }
+
+                DrawGameOver(graphics, S, ListScores);
             }
         }
-        public void DrawGameOver(System.Drawing.Graphics graphics, int S) //отрисовка
+        public void DrawGameOver(System.Drawing.Graphics graphics, int S, List<int> ListScores) //отрисовка
         {
-            string state = "Name: Latimeria" + "\n" +
-                "Food:" + food.ToString() + "\n" + "Score:" + score.ToString();
+
+            string state = "Your record:" + "\n" + "Stage:" + stage.ToString() + "\n" +
+                "Food:" + foods.ToString() + "\n" + "Score:" + score.ToString() + "\n" +
+                "For a new game, press any key" + "\n";
 
             graphics.DrawString(state, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 5));
+
+            graphics.DrawString("Best records:" + "\n", new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 80));
+            for (int i = 0; i < ListScores.Count; i++)
+            {
+                graphics.DrawString(ListScores[i].ToString() + "\n", new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 95));
+            }
         }
     }
     public struct Coordinate
@@ -118,7 +146,7 @@ namespace Sssnake
             Y = y;
         }
 
-        public static bool operator == (Coordinate left, Coordinate right)
+        public static bool operator ==(Coordinate left, Coordinate right)
         {
             return left.X == right.X && left.Y == right.Y;
         }
@@ -128,4 +156,5 @@ namespace Sssnake
             return left.X != right.X || left.Y != right.Y;
         }
     }
+
 }

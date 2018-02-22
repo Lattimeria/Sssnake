@@ -13,7 +13,7 @@ namespace Sssnake
     public partial class Form1 : Form
     {
         public int W = 30, H = 30, S = 10; //ширина и высота поля и размер ячейки
-        //public bool SnakeEatHimself = false;
+        public List<int> ListRecords = new List<int>();
         Game game;
         public Form1()
         {
@@ -39,33 +39,37 @@ namespace Sssnake
         void Program_KeyDown(object sender, KeyEventArgs e) //обработчик нажатия клавиш
         {
             int pressKey = 0;
-            switch (e.KeyData)
+            if (!game.gameFinished)
             {
-                case Keys.Up:
-                    pressKey = 0;
-                    break;
-                case Keys.Down:
-                    pressKey = 2;
-                    break;
-                case Keys.Right:
-                    pressKey = 1;
-                    break;
-                case Keys.Left:
-                    pressKey = 3;
-                    break;
+                switch (e.KeyData)
+                {
+                    case Keys.Up:
+                        pressKey = 0;
+                        break;
+                    case Keys.Down:
+                        pressKey = 2;
+                        break;
+                    case Keys.Right:
+                        pressKey = 1;
+                        break;
+                    case Keys.Left:
+                        pressKey = 3;
+                        break;
+                }
+                game.KeyDown(pressKey, W, H);
+                UpdateAndDraw();
             }
-            game.KeyDown(pressKey, W, H);
-            UpdateAndDraw();
-
+            else
+            {
+                StartGame();
+            }
         }
 
         void Program_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
             g.FillRectangle(Brushes.White, 0, 0, this.Width, this.Height);
-            game.Draw(g, S);
-            if (snakeeathimself == true)
-                game.DrawGameOver(g, S);
+            game.Draw(g, S, ListRecords);
         }
 
         public void StartGame()
@@ -76,15 +80,19 @@ namespace Sssnake
             timer1.Tick += new EventHandler(timer1_Tick);
             timer1.Start();
         }
-        bool snakeeathimself;
         private void timer1_Tick(object sender, EventArgs e)
         {
             UpdateAndDraw();
+            if(game.StageUp == true)
+            {
+                timer1.Interval -= 10;
+                game.StageUp = false;
+            }
         }
 
         void UpdateAndDraw()
         {
-            game.Update(W, H, out snakeeathimself);
+            game.Update(W, H);
             Refresh();
         }
     }
