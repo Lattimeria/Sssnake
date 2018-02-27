@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace Sssnake
 {
@@ -105,8 +107,18 @@ namespace Sssnake
             else
             {
                 ListScores.Add(score);
-                int count = ListScores.Count - 1;
-                for (int i = count-1; i > 0; i--)
+                XmlSerializer ser = new XmlSerializer(typeof(List<int>));
+                string path = Application.StartupPath + "\\records.txt";
+
+                FileStream file = new FileStream(path, FileMode.Append, FileAccess.Write);
+                TextWriter writer = new StreamWriter(file);
+                writer.Write(score);
+                writer.Close();
+                //ser.Serialize(writer, file);
+                
+                //int count = ListScores.Count - 1;
+                // сортировка по убыванию (?)
+                /*for (int i = count-1; i > 0; i--)
                 {
                     if (ListScores[count] > ListScores[i])
                     {
@@ -115,7 +127,7 @@ namespace Sssnake
                         ListScores[count] = temp;
                     }
                         
-                }
+                }*/
 
                 DrawGameOver(graphics, S, ListScores);
             }
