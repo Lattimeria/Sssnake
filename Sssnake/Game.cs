@@ -94,7 +94,7 @@ namespace Sssnake
                     break;
             }
         }
-        public void Draw(System.Drawing.Graphics graphics, int S, List<int> ListScores) //отрисовка
+        public void Draw(System.Drawing.Graphics graphics, int S, List<Scores> ListScores) //отрисовка
         {
             if (!gameFinished)
             {
@@ -106,47 +106,83 @@ namespace Sssnake
             }
             else
             {
-                ListScores.Add(score);
-                XmlSerializer ser = new XmlSerializer(typeof(List<int>));
+                Scores scores = new Scores();
+
                 string path = Application.StartupPath + "\\records.txt";
+                ListScores = ReadAndDeserialize(path);
 
-                FileStream file = new FileStream(path, FileMode.Append, FileAccess.Write);
-                TextWriter writer = new StreamWriter(file);
-                writer.Write(score);
-                writer.Close();
-                //ser.Serialize(writer, file);
+                scores.Name = "My name"; // сделать ввод имени
+                scores.Level = stage;
+                scores.EatingFood = foods;
+                scores.Score = score;
+                ListScores.Add(scores);
+
+                SerializeAndSave(path, ListScores);
                 
-                //int count = ListScores.Count - 1;
-                // сортировка по убыванию (?)
-                /*for (int i = count-1; i > 0; i--)
-                {
-                    if (ListScores[count] > ListScores[i])
-                    {
-                        int temp = ListScores[i];
-                        ListScores[i] = ListScores[count];
-                        ListScores[count] = temp;
-                    }
-                        
-                }*/
-
                 DrawGameOver(graphics, S, ListScores);
             }
         }
-        public void DrawGameOver(System.Drawing.Graphics graphics, int S, List<int> ListScores) //отрисовка
+        public List<Scores> ReadAndDeserialize(string path)
         {
-
-            string state = "Your record:" + "\n" + "Stage:" + stage.ToString() + "\n" +
-                "Food:" + foods.ToString() + "\n" + "Score:" + score.ToString() + "\n" +
-                "For a new game, press any key" + "\n";
-
-            graphics.DrawString(state, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 5));
-
-            graphics.DrawString("Best records:" + "\n", new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 80));
-            for (int i = 0; i < ListScores.Count; i++)
+            var serializer = new XmlSerializer(typeof(List<Scores>));
+            using (var reader = new StreamReader(path))
             {
-                graphics.DrawString(ListScores[i].ToString() + "\n", new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, new System.Drawing.Point(5, 95));
+                return (List<Scores>)serializer.Deserialize(reader);
             }
         }
+
+        public void SerializeAndSave(string path, List<Scores> data)
+        {
+            var serializer = new XmlSerializer(typeof(List<Scores>));
+            using (var writer = new StreamWriter(path))
+            {
+                serializer.Serialize(writer, data);
+            }
+        }
+
+        public void DrawGameOver(System.Drawing.Graphics graphics, int S, List<Scores> ListScores) //отрисовка
+        {
+            int count = ListScores.Count()-1;
+            var style = System.Drawing.FontStyle.Regular;
+            var color = System.Drawing.Brushes.Black;
+
+            string str = "For a new game, press any key";
+            graphics.DrawString(str, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Bold), color, new System.Drawing.Point(5, 5));
+
+            string stateName = "Name" + "\t" + "Stage" + "\t" + "Food" + "\t" + "Score";
+            graphics.DrawString(stateName, new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Italic), color, new System.Drawing.Point(5, 20));
+            graphics.DrawString("Your record:", new System.Drawing.Font("Arial", 10, style), color, new System.Drawing.Point(60, 35));
+
+            string stateCurrently = ListScores[count].Name + "\t" + ListScores[count].Level + "\t" +
+                ListScores[count].EatingFood + "\t" + ListScores[count].Score;
+            graphics.DrawString(stateCurrently, new System.Drawing.Font("Arial", 9, style), color, new System.Drawing.Point(5, 50));
+
+            graphics.DrawString("Best records:", new System.Drawing.Font("Arial", 10, style), color, new System.Drawing.Point(60, 65));
+
+            int indent = 80;
+
+            ListScores.Sort();
+            foreach (Scores aScores in ListScores)
+            {
+                string stateBest = aScores.Name + "\t" + aScores.Level + "\t" +
+                    aScores.EatingFood + "\t" + aScores.Score;
+                graphics.DrawString(stateBest, new System.Drawing.Font("Arial", 9, style), color, new System.Drawing.Point(5, indent));
+                indent += 15;
+            }
+            /*
+            for (int i = 0; i <= count; i++)
+            {
+                string stateBest =  ListScores[i].Name + "\t" + ListScores[i].Level + "\t" +
+                    ListScores[i].EatingFood + "\t" + ListScores[i].Score;
+                graphics.DrawString(stateBest, new System.Drawing.Font("Arial", 9, style), color, new System.Drawing.Point(5, indent));
+                indent += 15;
+            }*/
+        }
+
+        void SortListScores(List<Scores> ListScores)
+        {
+            
+        }           
     }
     public struct Coordinate
     {
@@ -169,4 +205,12 @@ namespace Sssnake
         }
     }
 
+    [Serializable]
+    public class Scores
+    {
+        public string Name = null;
+        public int Level = 0;
+        public int EatingFood = 0;
+        public int Score = 0;
+    }
 }

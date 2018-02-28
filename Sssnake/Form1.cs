@@ -13,7 +13,7 @@ namespace Sssnake
     public partial class Form1 : Form
     {
         public int W = 30, H = 30, S = 10; //ширина и высота поля и размер ячейки
-        public List<int> ListRecords = new List<int>();
+        public List<Scores> ListRecords = new List<Scores>();
         Game game;
         public Form1()
         {
@@ -70,12 +70,15 @@ namespace Sssnake
             Graphics g = e.Graphics;
             g.FillRectangle(Brushes.White, 0, 0, this.Width, this.Height);
             game.Draw(g, S, ListRecords);
+            if (game.gameFinished)
+                timer1.Stop();
         }
 
         public void StartGame()
         {
             game = new Game();
             game.Start(W, H, S);
+            timer1 = new Timer();
             timer1.Interval = 200;
             timer1.Tick += new EventHandler(timer1_Tick);
             timer1.Start();
