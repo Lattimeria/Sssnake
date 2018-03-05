@@ -76,13 +76,22 @@ namespace Sssnake
 
         public void StartGame()
         {
+            
             game = new Game();
+            game.AskName += AskName;
+            game.DoStageUp += () =>  timer1.Interval -= 10; 
             game.Start(W, H, S);
-            timer1 = new Timer();
+            //timer1 = new Timer();
             timer1.Interval = 200;
             timer1.Tick += new EventHandler(timer1_Tick);
             timer1.Start();
         }
+        
+        public string AskName()
+        {
+            return "Test";
+        }
+
         private void timer1_Tick(object sender, EventArgs e)
         {
             UpdateAndDraw();

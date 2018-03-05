@@ -20,6 +20,12 @@ namespace Sssnake
 
     class Game
     {
+        public delegate string AskNameDelegate();
+
+        public AskNameDelegate AskName;
+
+        public Action DoStageUp;
+
         Snake snake;
         Food food;
         int foods = 0; //кол-во съеденной еды
@@ -66,7 +72,8 @@ namespace Sssnake
                 if (foods % 10 == 0)
                 {
                     stage++;
-                    StageUp = true;
+                    //StageUp = true;
+                    DoStageUp();
                 }
                 snake.Grow();
             }
@@ -110,8 +117,9 @@ namespace Sssnake
 
                 string path = Application.StartupPath + "\\records.txt";
                 ListScores = ReadAndDeserialize(path);
+                               
 
-                scores.Name = "My name"; // сделать ввод имени
+                scores.Name = AskName?.Invoke() ?? ""; // сделать ввод имени
                 scores.Level = stage;
                 scores.EatingFood = foods;
                 scores.Score = score;
@@ -124,6 +132,9 @@ namespace Sssnake
         }
         public List<Scores> ReadAndDeserialize(string path)
         {
+            if (!File.Exists(path))
+                return new List<Scores>();
+
             var serializer = new XmlSerializer(typeof(List<Scores>));
             using (var reader = new StreamReader(path))
             {
@@ -134,7 +145,7 @@ namespace Sssnake
         public void SerializeAndSave(string path, List<Scores> data)
         {
             var serializer = new XmlSerializer(typeof(List<Scores>));
-            using (var writer = new StreamWriter(path))
+            using (var writer = new StreamWriter(File.Open(path, FileMode.OpenOrCreate)))
             {
                 serializer.Serialize(writer, data);
             }
@@ -206,11 +217,26 @@ namespace Sssnake
     }
 
     [Serializable]
-    public class Scores
+    public class Scores: IComparable
     {
         public string Name = null;
         public int Level = 0;
         public int EatingFood = 0;
         public int Score = 0;
+
+        public int CompareTo(object obj)
+        {
+            if (obj is Scores otherScore)
+            {
+                if (Score > otherScore.Score)
+                    return -1;
+                else if (Score < otherScore.Score)
+                    return 1;
+                else
+                    return 0;
+            }
+
+            return 0;               
+        }
     }
 }
